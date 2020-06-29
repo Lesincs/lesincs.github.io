@@ -1,6 +1,6 @@
 ---
 title: hexo的优化和备份
-date: 2019-09-29 20:27:12
+date: 2020-01-24 20:27:12
 tags: 
 categories: 随想
 thumbnail: /thumbnail/mike-scheid-639977-unsplash.jpg
@@ -16,25 +16,21 @@ thumbnail: /thumbnail/mike-scheid-639977-unsplash.jpg
 
 我在`hexo`源码某个目录放了一堆`unsplash`图片用来作为封面，每次写博客随机取一张。下面是自己写的一个工具类，用于每次获取一个图片相对路径用于粘贴到博客正文里面。
 
-```
-public class ThumbilUtil {
+```kotlin
+object ThumbnailUtil {
+    @JvmStatic
+    fun main(arg: Array<String>) {
+        val path = "/Users/lesincs/Hexo-Original/themes/icarus/source/thumbnail"
+        val file = File(path)
+        val prefix = "/thumbnail/"
+        val names: MutableList<String> = ArrayList()
 
-    public static void main(String[] arg) {
-        String path = "/Users/lesincs/hexo/themes/icarus/source/thumbnail";
-
-        File file = new File(path);
-
-        String prefix = "/thumbnail/";
-
-        List<String> names = new ArrayList<>();
-        for (File imageFile:file.listFiles()){
-            names.add(imageFile.getName());
+        file.listFiles()?.forEach {
+            names.add(it.name)
         }
 
-        Random random = new Random();
-
-        System.out.println(prefix+names.get(random.nextInt(names.size())));
-
+        val random = Random()
+        println(prefix + names[random.nextInt(names.size)])
     }
 }
 ```
@@ -43,7 +39,7 @@ public class ThumbilUtil {
 
 用`kt`写了一个简单压缩工具，用到了[thumbnailator](https://github.com/coobird/thumbnailator)这个第三方库，本来是想用`Luban`的，但是只能用于`Android Studio`,只能作罢。工具类代码:
 
-````
+````kotlin
 object ImageCompressUtil {
 
     fun zip(fromDir: String, toDir: String) {
