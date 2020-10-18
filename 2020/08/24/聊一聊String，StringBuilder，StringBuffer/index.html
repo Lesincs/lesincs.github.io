@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="utf-8">
+<title>聊一聊String，StringBuilder，StringBuffer - lesincs的blog</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+
+
+    <meta name="description" content="String和StringBuilder以及StringBuffer的区别应该是我经历的面试中被问到的频率最高的问题之一。这里对这三者相关的东西做个总结吧。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="聊一聊String，StringBuilder，StringBuffer">
+<meta property="og:url" content="http://yoursite.com/2020/08/24/聊一聊String，StringBuilder，StringBuffer/index.html">
+<meta property="og:site_name" content="lesincs的blog">
+<meta property="og:description" content="String和StringBuilder以及StringBuffer的区别应该是我经历的面试中被问到的频率最高的问题之一。这里对这三者相关的东西做个总结吧。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/thumbnail/florian-schneider-446378-unsplash.jpg">
+<meta property="og:updated_time" content="2020-10-17T16:39:18.716Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="聊一聊String，StringBuilder，StringBuffer">
+<meta name="twitter:description" content="String和StringBuilder以及StringBuffer的区别应该是我经历的面试中被问到的频率最高的问题之一。这里对这三者相关的东西做个总结吧。">
+<meta name="twitter:image" content="http://yoursite.com/thumbnail/florian-schneider-446378-unsplash.jpg">
+
+
+
+
+
+
+
+<link rel="icon" href="/images/avatar.jpg">
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.7.2/css/bulma.css">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu:400,600|Source+Code+Pro">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-light.css">
+
+
+    
+    
+    
+    <style>body>.footer,body>.navbar,body>.section{opacity:0}</style>
+    
+
+    
+    
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.6.8/dist/css/lightgallery.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.7.0/dist/css/justifiedGallery.min.css">
+    
+
+    
+    
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.css">
+
+
+    
+    
+    
+    
+
+<link rel="stylesheet" href="/css/back-to-top.css">
+
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    
+<link rel="stylesheet" href="/css/progressbar.css">
+<script src="https://cdn.jsdelivr.net/npm/pace-js@1.0.2/pace.min.js"></script>
+
+    
+    
+    
+
+    
+    
+    
+
+
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="is-3-column">
+    <nav class="navbar navbar-main">
+    <div class="container">
+        <div class="navbar-brand is-flex-center">
+            <a class="navbar-item navbar-logo" href="/">
+            
+                <img src="/images/avatar.jpg" alt="聊一聊String，StringBuilder，StringBuffer" height="28">
+            
+            </a>
+        </div>
+        <div class="navbar-menu">
+            
+            <div class="navbar-start">
+                
+                <a class="navbar-item" href="/">Home</a>
+                
+                <a class="navbar-item" href="/archives">Archives</a>
+                
+                <a class="navbar-item" href="/categories">Categories</a>
+                
+                <a class="navbar-item" href="/tags">Tags</a>
+                
+            </div>
+            
+            <div class="navbar-end">
+                
+                    
+                    
+                    <a class="navbar-item" target="_blank" title="Download on GitHub" href="https://github.com/lesincs">
+                        
+                        <i class="fab fa-github"></i>
+                        
+                    </a>
+                    
+                
+                
+                
+                <a class="navbar-item search" title="搜索" href="javascript:;">
+                    <i class="fas fa-search"></i>
+                </a>
+                
+            </div>
+        </div>
+    </div>
+</nav>
+    
+    <section class="section">
+        <div class="container">
+            <div class="columns">
+                <div class="column is-8-tablet is-8-desktop is-6-widescreen has-order-2 column-main"><div class="card">
+    
+    <div class="card-image">
+        <span class="image is-7by1">
+            <img class="thumbnail" src="/thumbnail/florian-schneider-446378-unsplash.jpg" alt="聊一聊String，StringBuilder，StringBuffer">
+        </span>
+    </div>
+    
+    <div class="card-content article ">
+        
+        <div class="level article-meta is-size-7 is-uppercase is-mobile is-overflow-x-auto">
+            <div class="level-left">
+                <time class="level-item has-text-grey" datetime="2020-08-24T12:16:00.000Z">2020-08-24</time>
+                
+                <div class="level-item">
+                <a class="has-link-grey -link" href="/categories/Java/">Java</a>
+                </div>
+                
+                
+                <span class="level-item has-text-grey">
+                    
+                    
+                    13 分钟 读完 (大约 1955 个字)
+                </span>
+                
+                
+            </div>
+        </div>
+        
+        <h1 class="title is-size-3 is-size-4-mobile has-text-weight-normal">
+            
+                聊一聊String，StringBuilder，StringBuffer
+            
+        </h1>
+        <div class="content">
+            <p><code>String</code>和<code>StringBuilder</code>以及<code>StringBuffer</code>的区别应该是我经历的面试中被问到的频率最高的问题之一。这里对这三者相关的东西做个总结吧。</p>
+<a id="more"></a>
+
+<p>一般遇到上面的问题，都会脱口而出：<code>String</code>是不可变的，而<code>StringBuilder</code>和<code>StringBuffer</code>是可变的。至于<code>StringBuilder</code>和<code>StringBuffer</code>的区别则是前者是线程不安全的，而后者是线程安全的。</p>
+<p>听了这个答案，大部分面试官也就进入下一个问题了，深入一点的面试官可能还会问到如下问题：</p>
+<ol>
+<li><p>为什么说<code>String</code>是不可变的？</p>
+</li>
+<li><p>为什么<code>String</code>要设计成不可变的？有什么好处？</p>
+</li>
+<li><p>为什么说<code>StringBuilder</code>和<code>StringBuffer</code>是可变的？</p>
+</li>
+<li><p>为什么说<code>StringBuilder</code>是线程不安全的？</p>
+</li>
+<li><p><code>StringBuffer</code>如何保证了线程安全？</p>
+</li>
+</ol>
+<p>首先解释下这里说的不可变的意思，不可变是指<code>String</code>的内容不可变，也就是我们如果对<code>String</code>内容进行修改，那么必然会产生一个新的<code>String</code>对象(不考虑字符串常量池)。</p>
+<h4 id="问题一，为什么说String是不可变的？"><a href="#问题一，为什么说String是不可变的？" class="headerlink" title="问题一，为什么说String是不可变的？"></a>问题一，为什么说<code>String</code>是不可变的？</h4><p>查看<code>String</code>类的源码，如下：</p>
+<figure class="highlight java hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-keyword">public</span> <span class="hljs-keyword">final</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">String</span> <span class="hljs-keyword">implements</span> <span class="hljs-title">java</span>.<span class="hljs-title">io</span>.<span class="hljs-title">Serializable</span>, <span class="hljs-title">Comparable</span>&lt;<span class="hljs-title">String</span>&gt;, <span class="hljs-title">CharSequence</span> </span>&#123;</span><br><span class="line">    <span class="hljs-comment">/** The value is used for character storage. */</span></span><br><span class="line">    <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">char</span> value[];</span><br><span class="line">    .............</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>首先该类被<code>final</code>关键字修饰，导致该类不可被继承；其次，存放内容的<code>char[]</code>被<code>final</code>关键字修饰，那么一旦构造函数执行后，该数组引用不可指向其他数组；再者，该类中除了构造方法之外，没有其他地方直接对<code>value []</code>的值进行修改。这三点保证了<code>String</code>类是不可变的。</p>
+<h4 id="问题二，为什么String要设计成不可变的？有什么好处？"><a href="#问题二，为什么String要设计成不可变的？有什么好处？" class="headerlink" title="问题二，为什么String要设计成不可变的？有什么好处？"></a>问题二，为什么<code>String</code>要设计成不可变的？有什么好处？</h4><p>这种设计上的问题可以去<code>so</code>找一找答案。我找到了一个高赞答案总结下：</p>
+<ol>
+<li><p>安全性。<code>String</code>变量常代表网络地址，用户名和密码等等作为参数传递。如果设计为可变的，这些参数很容易改变，容易导致代码安全问题。</p>
+</li>
+<li><p>同步和并发。将<code>String</code>作为不变的，天然解决了并发问题。</p>
+</li>
+<li><p>字符串常量池考虑。如果<code>String</code>可变，那么常量池就没了意义。这里举个例子：</p>
+<figure class="highlight java hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">String fooOne = <span class="hljs-string">"foo"</span>;</span><br><span class="line">String fooTwo = <span class="hljs-string">"foo"</span>;</span><br><span class="line"><span class="hljs-comment">// 上面定义了两个变量。因为字符串常量池的设计，fooOne和fooTwo将指向同一内存地址。</span></span><br><span class="line">此时，我们进行如下操作：</span><br><span class="line">fooTwo = <span class="hljs-string">"fooTwo"</span>;</span><br><span class="line"><span class="hljs-comment">// 此时，假如不存在String不可变的特性，那么会出现fooOne的内容也会变成"fooTwo"的情况，这显然是会出问题的，而String的不变性则解决了这个问题。</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>类加载。<code>String</code>被作为类加载的参数，如果它是可变的话，很容易导致错误的类被加载。</p>
+</li>
+</ol>
+<h4 id="问题三，为什么说StringBuilder和StringBuffer是可变的？"><a href="#问题三，为什么说StringBuilder和StringBuffer是可变的？" class="headerlink" title="问题三，为什么说StringBuilder和StringBuffer是可变的？"></a>问题三，为什么说<code>StringBuilder</code>和<code>StringBuffer</code>是可变的？</h4><p>因为这两者源码几乎一模一样，所以这里拿<code>StringBuilder</code>举例子。查看<code>StringBuilder</code>源码，发现其继承于<code>AbstractStringBuilder</code>:</p>
+<figure class="highlight java hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-keyword">abstract</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">AbstractStringBuilder</span> <span class="hljs-keyword">implements</span> <span class="hljs-title">Appendable</span>, <span class="hljs-title">CharSequence</span> </span>&#123;</span><br><span class="line">    <span class="hljs-comment">/**</span></span><br><span class="line"><span class="hljs-comment">     * The value is used for character storage.</span></span><br><span class="line"><span class="hljs-comment">     */</span></span><br><span class="line">    <span class="hljs-keyword">char</span>[] value;</span><br><span class="line"></span><br><span class="line">    <span class="hljs-comment">/**</span></span><br><span class="line"><span class="hljs-comment">     * The count is the number of characters used.</span></span><br><span class="line"><span class="hljs-comment">     */</span></span><br><span class="line">    <span class="hljs-keyword">int</span> count;</span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以发现，<code>char[]</code>没有被<code>final</code>修饰，并且多了个<code>count</code>属性用来表示已经使用的<code>char</code>字符的数量，很容易让人想到扩容机制。</p>
+<p>再看<code>StringBuilder</code>的方法，多了一些诸如：<code>append()</code>，<code>insert()</code>，<code>delete()</code>等等方法，这也是支撑<code>StringBuilder</code>和<code>StringBuffer</code>可变的方法。</p>
+<p>看看<code>append</code>方法的源码，其余方法原理都差不多：</p>
+<figure class="highlight java hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-meta">@Override</span></span><br><span class="line"><span class="hljs-function"><span class="hljs-keyword">public</span> StringBuilder <span class="hljs-title">append</span><span class="hljs-params">(String str)</span> </span>&#123;</span><br><span class="line">    <span class="hljs-keyword">super</span>.append(str);</span><br><span class="line">    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>内部调用了父类的方法：</p>
+<figure class="highlight java hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-function"><span class="hljs-keyword">public</span> AbstractStringBuilder <span class="hljs-title">append</span><span class="hljs-params">(String str)</span> </span>&#123;</span><br><span class="line">    <span class="hljs-keyword">if</span> (str == <span class="hljs-keyword">null</span>)</span><br><span class="line">        <span class="hljs-keyword">return</span> appendNull();</span><br><span class="line">    <span class="hljs-keyword">int</span> len = str.length();</span><br><span class="line">    ensureCapacityInternal(count + len);</span><br><span class="line">    str.getChars(<span class="hljs-number">0</span>, len, value, count);</span><br><span class="line">    count += len;</span><br><span class="line">    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>首先调用 <code>ensureCapacityInternal(count + len)</code>确保<code>char[]</code>的长度足够容纳所有字符，看一下内部实现:</p>
+<figure class="highlight java hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">   <span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title">ensureCapacityInternal</span><span class="hljs-params">(<span class="hljs-keyword">int</span> minimumCapacity)</span> </span>&#123;</span><br><span class="line">       <span class="hljs-comment">// overflow-conscious code</span></span><br><span class="line">       <span class="hljs-keyword">if</span> (minimumCapacity - value.length &gt; <span class="hljs-number">0</span>) &#123;</span><br><span class="line">           value = Arrays.copyOf(value,</span><br><span class="line">                   newCapacity(minimumCapacity));</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line"><span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> <span class="hljs-title">newCapacity</span><span class="hljs-params">(<span class="hljs-keyword">int</span> minCapacity)</span> </span>&#123;</span><br><span class="line">       <span class="hljs-comment">// overflow-conscious code</span></span><br><span class="line">       <span class="hljs-comment">// 首先将现有的容量*2再加上2得到一个新的容量</span></span><br><span class="line">       <span class="hljs-keyword">int</span> newCapacity = (value.length &lt;&lt; <span class="hljs-number">1</span>) + <span class="hljs-number">2</span>;</span><br><span class="line"> </span><br><span class="line">      <span class="hljs-comment">// 如果新容量还是不够容纳 则直接使用minCapacity</span></span><br><span class="line">       <span class="hljs-keyword">if</span> (newCapacity - minCapacity &lt; <span class="hljs-number">0</span>) &#123;</span><br><span class="line">           newCapacity = minCapacity;</span><br><span class="line">       &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="hljs-comment">// 当newCapacity越界或者大于了MAX_ARRAY_SIZE(Integer.MAX_VALUE - 8) </span></span><br><span class="line">       <span class="hljs-keyword">return</span> (newCapacity &lt;= <span class="hljs-number">0</span> || MAX_ARRAY_SIZE - newCapacity &lt; <span class="hljs-number">0</span>)</span><br><span class="line">           ? hugeCapacity(minCapacity)</span><br><span class="line">           : newCapacity;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> <span class="hljs-title">hugeCapacity</span><span class="hljs-params">(<span class="hljs-keyword">int</span> minCapacity)</span> </span>&#123;</span><br><span class="line">     <span class="hljs-comment">// 这个判断其实我有疑问，Inter.MAX_VALUE已经是最大的Int值，怎么还存在&lt;0 的情况，实际上当minCapacity越界时，这个等式是成立的</span></span><br><span class="line">       <span class="hljs-keyword">if</span> (Integer.MAX_VALUE - minCapacity &lt; <span class="hljs-number">0</span>) &#123; <span class="hljs-comment">// overflow</span></span><br><span class="line">           <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> OutOfMemoryError();</span><br><span class="line">       &#125;</span><br><span class="line">       <span class="hljs-keyword">return</span> (minCapacity &gt; MAX_ARRAY_SIZE)</span><br><span class="line">           ? minCapacity : MAX_ARRAY_SIZE;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+
+<p>确保<code>char[]</code>长度足够之后，调用了<code>String</code>的<code>getChars</code>方法。该方法注释为，</p>
+<blockquote>
+<p>Copies characters from this string into the destination character array.</p>
+</blockquote>
+<p>也就是将自身的部分字符拷贝到指定<code>char</code>数组中，很好理解。</p>
+<p>拷贝完成之后，<code>char</code>数组中的值已经得到了修改。</p>
+<p>之后，更新<code>count</code>的值，<code>append</code>方法结束。</p>
+<p>分析完部分源码，可以回答第三个问题，为什么<code>StringBuilder</code>和<code>StringBuffer</code>是可变的。因为在他们内部，<code>char[]</code>并没有被<code>final</code>修饰，因此可以在扩容之后，指向新的char数组 ；并且在追加新的字符时，会直接修改<code>char[]</code>的值。因此是可变的。</p>
+<h4 id="问题四，为什么说StringBuilder是线程不安全的？"><a href="#问题四，为什么说StringBuilder是线程不安全的？" class="headerlink" title="问题四，为什么说StringBuilder是线程不安全的？"></a>问题四，为什么说<code>StringBuilder</code>是线程不安全的？</h4><p>先写个代码测试一下：</p>
+<figure class="highlight kotlin hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">main</span><span class="hljs-params">(args: <span class="hljs-type">Array</span>&lt;<span class="hljs-type">String</span>&gt;)</span></span> &#123;</span><br><span class="line">    <span class="hljs-keyword">val</span> sb = StringBuilder()</span><br><span class="line"></span><br><span class="line">    <span class="hljs-keyword">for</span> (i <span class="hljs-keyword">in</span> <span class="hljs-number">0</span> until <span class="hljs-number">10</span>)&#123;</span><br><span class="line">        thread &#123;</span><br><span class="line">            <span class="hljs-keyword">for</span> (j <span class="hljs-keyword">in</span> <span class="hljs-number">0</span> until <span class="hljs-number">1000</span>)&#123;</span><br><span class="line">                sb.append(<span class="hljs-string">"1"</span>)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    Thread.sleep(<span class="hljs-number">2000</span>)</span><br><span class="line">    println(sb.length)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>分别开<code>10</code>个线程，对<code>StringBuilder</code>进行<code>1000</code>次的<code>append</code>操作。如果<code>StringBuilder</code>是线程安全的，那么打印出来的长度应该是<code>10000</code>.</p>
+<p>可是实际上的结果是：</p>
+<ol>
+<li>每次打印的结果均小于<code>10000</code>.</li>
+<li>部分测试用例，还会存在 爆出<code>java.lang.ArrayIndexOutOfBoundsException</code>这个错误的情况。</li>
+</ol>
+<p>先分析<strong>1</strong>，为什么每次打印的结果均小于<code>10000</code>.</p>
+<p>试想这样一种情况，<code>AB</code>两个线程刚好同时对<code>value[]</code>进行了<code>append</code>操作，此时双方都到了更新<code>count</code>的代码处，假如此时，<code>count</code>的值为<code>100</code>，那么<code>count</code>最终的结果理应为<code>102</code>。可是，由于没有进行同步，两个线程几乎同时拿到<code>100</code>的值，然后分别对其<code>+1</code>操作，然后再设置<code>count</code>的值为<code>101</code>，因此，本身<code>append</code>了<code>2</code>次的值却只有一次生效了。也就导致最终使<code>StringBuilder</code>的<code>length</code>小于预期情况。</p>
+<p>再分析<strong>2</strong>，为什么会出现爆出<code>java.lang.ArrayIndexOutOfBoundsException</code>的情况。</p>
+<p>看了下，这个报错出现在<code>str.getChars(0, len, value, count)</code>方法内部，具体在<code>System.arraycopy(value, srcBegin, dst, dstBegin, srcEnd - srcBegin)</code>这一行代码中。</p>
+<p>先画个图理解下<code>System.arraycopy</code>方法：</p>
+<p><img src="https://i.loli.net/2020/08/25/9GVPnfJum7EsDCy.png" alt></p>
+<p>根据图片概括就是，<code>src</code>从<code>srcPos</code>开始往<code>des</code>的<code>desPos</code>处复制<code>length</code>长度的数据。而这个<code>desPos</code>对应我们的<code>count</code>。因为处于多线程环境中，可能另一个线程刚好完成了<code>append</code>，使得<code>count+1</code>，因此，拿到的<code>count</code>就预期的多了<code>1</code>，导致了这个<code>Exception</code>。</p>
+<h4 id="问题五，StringBuffer如何保证了线程安全？"><a href="#问题五，StringBuffer如何保证了线程安全？" class="headerlink" title="问题五，StringBuffer如何保证了线程安全？"></a>问题五，<code>StringBuffer</code>如何保证了线程安全？</h4><p>这个看了源码就很好回答了。</p>
+<p><code>StringBuffer</code>通过对方法使用<code>synchronized</code>关键字加锁来保证线程安全。</p>
+<h3 id="结尾"><a href="#结尾" class="headerlink" title="结尾"></a>结尾</h3><p><code>StringBuild</code>看似源码比较简单，但是源码中对<code>overflow</code>的处理以及对<code>System.copy</code>函数的灵活使用，还是很值得学习和借鉴的。</p>
+
+        </div>
+        
+        
+        
+    </div>
+</div>
+
+
+
+
+
+<div class="card card-transparent">
+    <div class="level post-navigation is-flex-wrap is-mobile">
+        
+        <div class="level-start">
+            <a class="level level-item has-link-grey  article-nav-prev" href="/2020/09/19/旋转数组的最小数字/">
+                <i class="level-item fas fa-chevron-left"></i>
+                <span class="level-item">旋转数组的最小数字</span>
+            </a>
+        </div>
+        
+        
+        <div class="level-end">
+            <a class="level level-item has-link-grey  article-nav-next" href="/2020/07/22/使用IntentFlag来启动Activity/">
+                <span class="level-item">使用IntentFlag来启动Activity</span>
+                <i class="level-item fas fa-chevron-right"></i>
+            </a>
+        </div>
+        
+    </div>
+</div>
+
+
+</div>
+                
+
+
+
+
+<div class="column is-4-tablet is-4-desktop is-3-widescreen  has-order-1 column-left ">
+    
+        
+<div class="card widget">
+    <div class="card-content">
+        <nav class="level">
+            <div class="level-item has-text-centered" style="flex-shrink: 1">
+                <div>
+                    
+                        <img class="image is-128x128 has-mb-6" src="/images/avatar.jpg" alt="cs丶">
+                    
+                    
+                    <p class="is-size-4 is-block">
+                        cs丶
+                    </p>
+                    
+                    
+                    <p class="is-size-6 is-block">
+                        Android Developer
+                    </p>
+                    
+                    
+                    <p class="is-size-6 is-flex is-flex-center has-text-grey">
+                        <i class="fas fa-map-marker-alt has-mr-7"></i>
+                        <span>SiChuan MianYang</span>
+                    </p>
+                    
+                </div>
+            </div>
+        </nav>
+        <nav class="level is-mobile">
+            <div class="level-item has-text-centered is-marginless">
+                <div>
+                    <p class="heading">
+                        文章
+                    </p>
+                    <p class="title has-text-weight-normal">
+                        14
+                    </p>
+                </div>
+            </div>
+            <div class="level-item has-text-centered is-marginless">
+                <div>
+                    <p class="heading">
+                        分类
+                    </p>
+                    <p class="title has-text-weight-normal">
+                        5
+                    </p>
+                </div>
+            </div>
+            <div class="level-item has-text-centered is-marginless">
+                <div>
+                    <p class="heading">
+                        标签
+                    </p>
+                    <p class="title has-text-weight-normal">
+                        0
+                    </p>
+                </div>
+            </div>
+        </nav>
+        <div class="level">
+            <a class="level-item button is-link is-rounded" href="https://github.com/lesincs" target="_blank">
+                关注我</a>
+        </div>
+        
+        
+    </div>
+</div>
+    
+        
+    
+        
+<div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+            <h3 class="menu-label">
+                分类
+            </h3>
+            <ul class="menu-list">
+            <li>
+        <a class="level is-marginless" href="/categories/Android/">
+            <span class="level-start">
+                <span class="level-item">Android</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">3</span>
+            </span>
+        </a></li><li>
+        <a class="level is-marginless" href="/categories/Java/">
+            <span class="level-start">
+                <span class="level-item">Java</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">1</span>
+            </span>
+        </a></li><li>
+        <a class="level is-marginless" href="/categories/生活/">
+            <span class="level-start">
+                <span class="level-item">生活</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">1</span>
+            </span>
+        </a></li><li>
+        <a class="level is-marginless" href="/categories/算法/">
+            <span class="level-start">
+                <span class="level-item">算法</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">4</span>
+            </span>
+        </a></li><li>
+        <a class="level is-marginless" href="/categories/随想/">
+            <span class="level-start">
+                <span class="level-item">随想</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">5</span>
+            </span>
+        </a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+    
+        
+    
+    
+        <div class="column-right-shadow is-hidden-widescreen ">
+        
+            
+<div class="card widget">
+    <div class="card-content">
+        <h3 class="menu-label">
+            最新文章
+        </h3>
+        
+        <article class="media">
+            
+            <a href="/2020/10/18/路口/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/images/thumbnail.svg" alt="路口">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-10-18T15:07:00.000Z">2020-10-18</time></div>
+                    <a href="/2020/10/18/路口/" class="title has-link-black-ter is-size-6 has-text-weight-normal">路口</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/随想/">随想</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2020/10/17/一个Android猿的九月面试&杂谈/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnail/michael-heuser-312895-unsplash.jpg" alt="一个 Android 猿的九月面试&amp;杂谈">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-10-17T04:16:00.000Z">2020-10-17</time></div>
+                    <a href="/2020/10/17/一个Android猿的九月面试&杂谈/" class="title has-link-black-ter is-size-6 has-text-weight-normal">一个 Android 猿的九月面试&amp;杂谈</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/随想/">随想</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2020/10/13/解决Gradle下载自身缓慢的问题/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnail/joseph-barrientos-20264-unsplash.jpg" alt="解决Gradle下载自身缓慢的问题">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-10-13T15:38:00.000Z">2020-10-13</time></div>
+                    <a href="/2020/10/13/解决Gradle下载自身缓慢的问题/" class="title has-link-black-ter is-size-6 has-text-weight-normal">解决Gradle下载自身缓慢的问题</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/Android/">Android</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2020/10/11/如何书写自己的英文地址/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnail/suganth-393816-unsplash.jpg" alt="如何书写自己的英文地址">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-10-11T11:48:00.000Z">2020-10-11</time></div>
+                    <a href="/2020/10/11/如何书写自己的英文地址/" class="title has-link-black-ter is-size-6 has-text-weight-normal">如何书写自己的英文地址</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/随想/">随想</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2020/09/19/旋转数组的最小数字/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnail/jf-brou-358069-unsplash.jpg" alt="旋转数组的最小数字">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-09-19T02:28:50.000Z">2020-09-19</time></div>
+                    <a href="/2020/09/19/旋转数组的最小数字/" class="title has-link-black-ter is-size-6 has-text-weight-normal">旋转数组的最小数字</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/算法/">算法</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+    </div>
+</div>
+
+        
+            <div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+        <h3 class="menu-label">
+            归档
+        </h3>
+        <ul class="menu-list">
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/10/">
+                <span class="level-start">
+                    <span class="level-item">十月 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">4</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/09/">
+                <span class="level-start">
+                    <span class="level-item">九月 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/08/">
+                <span class="level-start">
+                    <span class="level-item">八月 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/07/">
+                <span class="level-start">
+                    <span class="level-item">七月 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">2</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/06/">
+                <span class="level-start">
+                    <span class="level-item">六月 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">3</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/01/">
+                <span class="level-start">
+                    <span class="level-item">一月 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2019/09/">
+                <span class="level-start">
+                    <span class="level-item">九月 2019</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2019/08/">
+                <span class="level-start">
+                    <span class="level-item">八月 2019</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        </ul>
+        </div>
+    </div>
+</div>
+        
+            <div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+            <h3 class="menu-label">
+                标签
+            </h3>
+            <div class="field is-grouped is-grouped-multiline">
+                
+            </div>
+        </div>
+    </div>
+</div>
+        
+        </div>
+    
+</div>
+
+                
+
+
+
+
+<div class="column is-4-tablet is-4-desktop is-3-widescreen is-hidden-touch is-hidden-desktop-only has-order-3 column-right ">
+    
+        
+<div class="card widget">
+    <div class="card-content">
+        <h3 class="menu-label">
+            最新文章
+        </h3>
+        
+        <article class="media">
+            
+            <a href="/2020/10/18/路口/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/images/thumbnail.svg" alt="路口">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-10-18T15:07:00.000Z">2020-10-18</time></div>
+                    <a href="/2020/10/18/路口/" class="title has-link-black-ter is-size-6 has-text-weight-normal">路口</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/随想/">随想</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2020/10/17/一个Android猿的九月面试&杂谈/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnail/michael-heuser-312895-unsplash.jpg" alt="一个 Android 猿的九月面试&amp;杂谈">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-10-17T04:16:00.000Z">2020-10-17</time></div>
+                    <a href="/2020/10/17/一个Android猿的九月面试&杂谈/" class="title has-link-black-ter is-size-6 has-text-weight-normal">一个 Android 猿的九月面试&amp;杂谈</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/随想/">随想</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2020/10/13/解决Gradle下载自身缓慢的问题/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnail/joseph-barrientos-20264-unsplash.jpg" alt="解决Gradle下载自身缓慢的问题">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-10-13T15:38:00.000Z">2020-10-13</time></div>
+                    <a href="/2020/10/13/解决Gradle下载自身缓慢的问题/" class="title has-link-black-ter is-size-6 has-text-weight-normal">解决Gradle下载自身缓慢的问题</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/Android/">Android</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2020/10/11/如何书写自己的英文地址/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnail/suganth-393816-unsplash.jpg" alt="如何书写自己的英文地址">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-10-11T11:48:00.000Z">2020-10-11</time></div>
+                    <a href="/2020/10/11/如何书写自己的英文地址/" class="title has-link-black-ter is-size-6 has-text-weight-normal">如何书写自己的英文地址</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/随想/">随想</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2020/09/19/旋转数组的最小数字/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnail/jf-brou-358069-unsplash.jpg" alt="旋转数组的最小数字">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-09-19T02:28:50.000Z">2020-09-19</time></div>
+                    <a href="/2020/09/19/旋转数组的最小数字/" class="title has-link-black-ter is-size-6 has-text-weight-normal">旋转数组的最小数字</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/算法/">算法</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+    </div>
+</div>
+
+    
+        <div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+        <h3 class="menu-label">
+            归档
+        </h3>
+        <ul class="menu-list">
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/10/">
+                <span class="level-start">
+                    <span class="level-item">十月 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">4</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/09/">
+                <span class="level-start">
+                    <span class="level-item">九月 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/08/">
+                <span class="level-start">
+                    <span class="level-item">八月 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/07/">
+                <span class="level-start">
+                    <span class="level-item">七月 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">2</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/06/">
+                <span class="level-start">
+                    <span class="level-item">六月 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">3</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/01/">
+                <span class="level-start">
+                    <span class="level-item">一月 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2019/09/">
+                <span class="level-start">
+                    <span class="level-item">九月 2019</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2019/08/">
+                <span class="level-start">
+                    <span class="level-item">八月 2019</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        </ul>
+        </div>
+    </div>
+</div>
+    
+        <div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+            <h3 class="menu-label">
+                标签
+            </h3>
+            <div class="field is-grouped is-grouped-multiline">
+                
+            </div>
+        </div>
+    </div>
+</div>
+    
+    
+</div>
+
+            </div>
+        </div>
+    </section>
+    <footer class="footer">
+    <div class="container">
+        <div class="level">
+            <div class="level-start has-text-centered-mobile">
+                <a class="footer-logo is-block has-mb-6" href="/">
+                
+                    <img src="/images/avatar.jpg" alt="聊一聊String，StringBuilder，StringBuffer" height="28">
+                
+                </a>
+                <p class="is-size-7">
+                &copy; 2020 cs丶&nbsp;
+                Powered by <a href="https://hexo.io/" target="_blank">Hexo</a> & <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank">Icarus</a>
+                
+                </p>
+            </div>
+            <div class="level-end">
+            
+                <div class="field has-addons is-flex-center-mobile has-mt-5-mobile is-flex-wrap is-flex-middle">
+                
+                
+                <p class="control">
+                    <a class="button is-white is-large" target="_blank" title="Download on GitHub" href="https://github.com/lesincs">
+                        
+                        <i class="fab fa-github"></i>
+                        
+                    </a>
+                </p>
+                
+                </div>
+            
+            </div>
+        </div>
+    </div>
+</footer>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script>
+<script>moment.locale("zh-CN");</script>
+
+
+    
+    
+    
+    <script src="/js/animation.js"></script>
+    
+
+    
+    
+    
+    <script src="https://cdn.jsdelivr.net/npm/lightgallery@1.6.8/dist/js/lightgallery.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.7.0/dist/js/jquery.justifiedGallery.min.js" defer></script>
+    <script src="/js/gallery.js" defer></script>
+    
+
+    
+    
+
+<div id="outdated">
+    <h6>Your browser is out-of-date!</h6>
+    <p>Update your browser to view this website correctly. <a id="btnUpdateBrowser" href="http://outdatedbrowser.com/">Update
+            my browser now </a></p>
+    <p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">&times;</a></p>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.js" defer></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        outdatedBrowser({
+            bgColor: '#f25648',
+            color: '#ffffff',
+            lowerThan: 'flex'
+        });
+    });
+</script>
+
+
+    
+    
+<script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.5/unpacked/MathJax.js?config=TeX-MML-AM_CHTML" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    MathJax.Hub.Config({
+        'HTML-CSS': {
+            matchFontHeight: false
+        },
+        SVG: {
+            matchFontHeight: false
+        },
+        CommonHTML: {
+            matchFontHeight: false
+        },
+        tex2jax: {
+            inlineMath: [
+                ['$','$'],
+                ['\\(','\\)']
+            ]
+        }
+    });
+});
+</script>
+
+    
+    
+
+<a id="back-to-top" title="回到顶端" href="javascript:;">
+    <i class="fas fa-chevron-up"></i>
+</a>
+<script src="/js/back-to-top.js" defer></script>
+
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+    <script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script>
+    <script src="/js/clipboard.js" defer></script>
+    
+
+    
+    
+    
+
+
+<script src="/js/main.js" defer></script>
+
+    
+    <div class="searchbox ins-search">
+    <div class="searchbox-container ins-search-container">
+        <div class="searchbox-input-wrapper">
+            <input type="text" class="searchbox-input ins-search-input" placeholder="想要查找什么...">
+            <span class="searchbox-close ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="searchbox-result-wrapper ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+    (function (window) {
+        var INSIGHT_CONFIG = {
+            TRANSLATION: {
+                POSTS: '文章',
+                PAGES: '页面',
+                CATEGORIES: '分类',
+                TAGS: '标签',
+                UNTITLED: '(无标题)',
+            },
+            CONTENT_URL: '/content.json',
+        };
+        window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+    })(window);
+</script>
+<script src="/js/insight.js" defer></script>
+<link rel="stylesheet" href="/css/search.css">
+<link rel="stylesheet" href="/css/insight.css">
+    
+</body>
+</html>

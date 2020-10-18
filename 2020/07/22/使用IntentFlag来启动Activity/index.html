@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="utf-8">
+<title>使用IntentFlag来启动Activity - lesincs的blog</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+
+
+    <meta name="description" content="虽然有Android有四大启动模式，但是实际上开发中，如果仅仅依靠在xml指定launchMode的形式来启动Activity，不太够用并且不太灵活。所以这篇文章探究下在一些常见的场景如何仅仅利用IntentFlag的形式来启动Activity。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用IntentFlag来启动Activity">
+<meta property="og:url" content="http://yoursite.com/2020/07/22/使用IntentFlag来启动Activity/index.html">
+<meta property="og:site_name" content="lesincs的blog">
+<meta property="og:description" content="虽然有Android有四大启动模式，但是实际上开发中，如果仅仅依靠在xml指定launchMode的形式来启动Activity，不太够用并且不太灵活。所以这篇文章探究下在一些常见的场景如何仅仅利用IntentFlag的形式来启动Activity。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/thumbnail/sebastian-pichler-20070-unsplash.jpg">
+<meta property="og:updated_time" content="2020-10-17T16:39:18.715Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="使用IntentFlag来启动Activity">
+<meta name="twitter:description" content="虽然有Android有四大启动模式，但是实际上开发中，如果仅仅依靠在xml指定launchMode的形式来启动Activity，不太够用并且不太灵活。所以这篇文章探究下在一些常见的场景如何仅仅利用IntentFlag的形式来启动Activity。">
+<meta name="twitter:image" content="http://yoursite.com/thumbnail/sebastian-pichler-20070-unsplash.jpg">
+
+
+
+
+
+
+
+<link rel="icon" href="/images/avatar.jpg">
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.7.2/css/bulma.css">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu:400,600|Source+Code+Pro">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-light.css">
+
+
+    
+    
+    
+    <style>body>.footer,body>.navbar,body>.section{opacity:0}</style>
+    
+
+    
+    
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.6.8/dist/css/lightgallery.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.7.0/dist/css/justifiedGallery.min.css">
+    
+
+    
+    
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.css">
+
+
+    
+    
+    
+    
+
+<link rel="stylesheet" href="/css/back-to-top.css">
+
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    
+<link rel="stylesheet" href="/css/progressbar.css">
+<script src="https://cdn.jsdelivr.net/npm/pace-js@1.0.2/pace.min.js"></script>
+
+    
+    
+    
+
+    
+    
+    
+
+
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="is-3-column">
+    <nav class="navbar navbar-main">
+    <div class="container">
+        <div class="navbar-brand is-flex-center">
+            <a class="navbar-item navbar-logo" href="/">
+            
+                <img src="/images/avatar.jpg" alt="使用IntentFlag来启动Activity" height="28">
+            
+            </a>
+        </div>
+        <div class="navbar-menu">
+            
+            <div class="navbar-start">
+                
+                <a class="navbar-item" href="/">Home</a>
+                
+                <a class="navbar-item" href="/archives">Archives</a>
+                
+                <a class="navbar-item" href="/categories">Categories</a>
+                
+                <a class="navbar-item" href="/tags">Tags</a>
+                
+            </div>
+            
+            <div class="navbar-end">
+                
+                    
+                    
+                    <a class="navbar-item" target="_blank" title="Download on GitHub" href="https://github.com/lesincs">
+                        
+                        <i class="fab fa-github"></i>
+                        
+                    </a>
+                    
+                
+                
+                
+                <a class="navbar-item search" title="搜索" href="javascript:;">
+                    <i class="fas fa-search"></i>
+                </a>
+                
+            </div>
+        </div>
+    </div>
+</nav>
+    
+    <section class="section">
+        <div class="container">
+            <div class="columns">
+                <div class="column is-8-tablet is-8-desktop is-6-widescreen has-order-2 column-main"><div class="card">
+    
+    <div class="card-image">
+        <span class="image is-7by1">
+            <img class="thumbnail" src="/thumbnail/sebastian-pichler-20070-unsplash.jpg" alt="使用IntentFlag来启动Activity">
+        </span>
+    </div>
+    
+    <div class="card-content article ">
+        
+        <div class="level article-meta is-size-7 is-uppercase is-mobile is-overflow-x-auto">
+            <div class="level-left">
+                <time class="level-item has-text-grey" datetime="2020-07-22T11:05:00.000Z">2020-07-22</time>
+                
+                <div class="level-item">
+                <a class="has-link-grey -link" href="/categories/Android/">Android</a>
+                </div>
+                
+                
+                <span class="level-item has-text-grey">
+                    
+                    
+                    11 分钟 读完 (大约 1659 个字)
+                </span>
+                
+                
+            </div>
+        </div>
+        
+        <h1 class="title is-size-3 is-size-4-mobile has-text-weight-normal">
+            
+                使用IntentFlag来启动Activity
+            
+        </h1>
+        <div class="content">
+            <p>虽然有<code>Android</code>有四大启动模式，但是实际上开发中，如果仅仅依靠在<code>xml</code>指定<code>launchMode</code>的形式来启动<code>Activity</code>，不太够用并且不太灵活。所以这篇文章探究下在一些常见的场景如何仅仅利用<code>IntentFlag</code>的形式来启动<code>Activity</code>。</p>
+<a id="more"></a>
+
+<h3 id="场景一-在Service中启动Activity"><a href="#场景一-在Service中启动Activity" class="headerlink" title="场景一:在Service中启动Activity"></a>场景一:在Service中启动Activity</h3><p>我们在<code>MainActivity</code>中放置一个<code>Button</code>，点击<code>Button</code>会开启一个<code>Service</code>，在<code>Service</code>的<code>onStartCommand</code>中，我们反过来启动<code>MainActivity</code>。</p>
+<p><code>MainActivity</code>的代码：</p>
+<figure class="highlight kotlin hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">onCreate</span><span class="hljs-params">(savedInstanceState: <span class="hljs-type">Bundle</span>?)</span></span> &#123;</span><br><span class="line">    <span class="hljs-keyword">super</span>.onCreate(savedInstanceState)</span><br><span class="line">    setContentView(R.layout.activity_main)</span><br><span class="line">    </span><br><span class="line">    bt_main_activity.setOnClickListener &#123;</span><br><span class="line">        startService(Intent(<span class="hljs-keyword">this</span>,MyService::<span class="hljs-class"><span class="hljs-keyword">class</span>.<span class="hljs-title">java</span>))</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>MyService</code>中的代码：</p>
+<figure class="highlight kotlin hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">onStartCommand</span><span class="hljs-params">(intent: <span class="hljs-type">Intent</span>?, flags: <span class="hljs-type">Int</span>, startId: <span class="hljs-type">Int</span>)</span></span>: <span class="hljs-built_in">Int</span> &#123;</span><br><span class="line">     startActivity(Intent(<span class="hljs-keyword">this</span>,MainActivity::<span class="hljs-class"><span class="hljs-keyword">class</span>.<span class="hljs-title">java</span>))</span></span><br><span class="line">     <span class="hljs-keyword">return</span> <span class="hljs-keyword">super</span>.onStartCommand(intent, flags, startId)</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>接着我们启动<code>App</code>，点击<code>MainActivity</code>中的<code>Button</code>，猜怎么着？在我的<code>Android 7.0</code>设备上正常启动了<code>MainActivity</code>，而在我的模拟器上（<code>Andorid 10</code>）上面却崩溃了。错误如下:</p>
+<blockquote>
+<p>Caused by: android.util.AndroidRuntimeException: Calling startActivity() from outside of an Activity  context requires the FLAG_ACTIVITY_NEW_TASK flag. Is this really what you want?</p>
+</blockquote>
+<p>查阅官方文档：</p>
+<p><img src="https://i.loli.net/2020/07/22/Wu2VXIFRPilDUoN.png" alt>也就是说在<code>Android 7.0</code>以下或者<code>Android 9</code>以上<code>Service</code>或者在<code>Application</code>中启动<code>Activity</code>，必须加上<code>FLAG_ACTIVITY_NEW_TASK</code>这个<code>Flag</code>；而因为一个<code>bug</code>，这个要求在<code>Android 7.0</code>中不是强制的。无论如何我们在<code>Service</code>中加上这个<code>Flag</code>就可以了。</p>
+<p><code>Service</code>中的代码变成了这样：</p>
+<figure class="highlight kotlin hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">onStartCommand</span><span class="hljs-params">(intent: <span class="hljs-type">Intent</span>?, flags: <span class="hljs-type">Int</span>, startId: <span class="hljs-type">Int</span>)</span></span>: <span class="hljs-built_in">Int</span> &#123;</span><br><span class="line">    startActivity(Intent(<span class="hljs-keyword">this</span>,MainActivity::<span class="hljs-class"><span class="hljs-keyword">class</span>.<span class="hljs-title">java</span>)</span></span><br><span class="line">        .apply &#123;</span><br><span class="line">            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)</span><br><span class="line">        &#125;)</span><br><span class="line">    <span class="hljs-keyword">return</span> <span class="hljs-keyword">super</span>.onStartCommand(intent, flags, startId)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>修改之后，两个设备都正常启动了<code>MainActivity</code>，此时发现任务栈中存在了2个<code>MainActivity</code>。</p>
+<p>其实这里比较奇怪，按照书上说的，<code>FLAG_ACTIVITY_NEW_TASK</code>等于<code>launchMode</code>中指定<code>singleTask</code>，也就是栈内复用模式。可实际上还是启动了2个<code>MainActivity</code>。我以为是在<code>Service</code>中启动的问题，可实际上就算是在<code>MainActivity</code>中启动，也还是会启动两个<code>MainActivity</code>。所以说还是不能全信书本，应该自己多实践。</p>
+<p>继续，如果想只启动一个<code>MainActivity</code>，可以借助<code>FLAG_ACTIVITY_SINGLE_TOP</code>这个<code>Flag</code>，表示启用栈顶复用模式，因为<code>MainActivity</code>在栈顶，所以不会重新创建。</p>
+<p>修改<code>Service</code>代码：</p>
+<figure class="highlight kotlin hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">onStartCommand</span><span class="hljs-params">(intent: <span class="hljs-type">Intent</span>?, flags: <span class="hljs-type">Int</span>, startId: <span class="hljs-type">Int</span>)</span></span>: <span class="hljs-built_in">Int</span> &#123;</span><br><span class="line">    startActivity(Intent(<span class="hljs-keyword">this</span>,MainActivity::<span class="hljs-class"><span class="hljs-keyword">class</span>.<span class="hljs-title">java</span>)</span></span><br><span class="line">        .apply &#123;</span><br><span class="line">            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)</span><br><span class="line">            addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)</span><br><span class="line">        &#125;)</span><br><span class="line">    <span class="hljs-keyword">return</span> <span class="hljs-keyword">super</span>.onStartCommand(intent, flags, startId)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>测试结果：加上这个<code>Flag</code>之后，<code>MainActivity</code>没有重建，其<code>onNewIntent</code>得到回调。</p>
+<p>此时，考虑一种情况。如果我们是在<code>SecondActivity</code>中启动了<code>Service</code>，此时<code>SecondActivity</code>在栈顶了。如果此时再用<code>FLAG_ACTIVITY_SINGLE_TOP</code>这个<code>Flag</code>，肯定还是会重建<code>MainActivity</code>，测试一下。</p>
+<p>我们由<code>MainActivity</code>启动<code>SecondActivity</code>,在<code>SecondActivity</code>再启动<code>Service</code>。</p>
+<p>经测试，不改变<code>Service</code>代码的情况下。<code>Service</code>启动后，任务栈有三个<code>Activity</code>，分别是<code>MainActivity</code>-&gt;<code>SecondActivity</code>-&gt;<code>MainActivity</code>。</p>
+<p>如果我们只想保留一个<code>MainActivity</code>怎么办呢？此时可以使用<code>FLAG_ACTIVITY_CLEAR_TOP</code>这个<code>Flag</code>。</p>
+<p>修改<code>Service</code>代码如下：</p>
+<figure class="highlight kotlin hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">onStartCommand</span><span class="hljs-params">(intent: <span class="hljs-type">Intent</span>?, flags: <span class="hljs-type">Int</span>, startId: <span class="hljs-type">Int</span>)</span></span>: <span class="hljs-built_in">Int</span> &#123;</span><br><span class="line">    startActivity(Intent(<span class="hljs-keyword">this</span>,MainActivity::<span class="hljs-class"><span class="hljs-keyword">class</span>.<span class="hljs-title">java</span>)</span></span><br><span class="line">        .apply &#123;</span><br><span class="line">            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)</span><br><span class="line">            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)</span><br><span class="line">        &#125;)</span><br><span class="line">    <span class="hljs-keyword">return</span> <span class="hljs-keyword">super</span>.onStartCommand(intent, flags, startId)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>此时运行一下，发现任务栈确实只有一个<code>MainActivity</code>了，不过该<code>MainActivity</code>重建了。如果我们不希望他重建怎么办呢？<code>FLAG_ACTIVITY_CLEAR_TOP</code>的文档中有一段话：</p>
+<blockquote>
+<figure class="highlight plain hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; The currently running instance of activity B in the above example will either receive the new intent you are starting here in its  onNewIntent() method, or be itself finished and restarted with the new intent.  If it has declared its launch mode to be &quot;multiple&quot; (the default) and you have not set &#123;@link #FLAG_ACTIVITY_SINGLE_TOP&#125; in the same intent, then it will be finished and re-created; for all other launch modes or if &#123;@link #FLAG_ACTIVITY_SINGLE_TOP&#125; is set then this Intent will be delivered to the current instance&apos;s onNewIntent().</span><br><span class="line">&gt;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>可以知道，如果想避免重建可以加上<code>FLAG_ACTIVITY_SINGLE_TOP</code>。</p>
+<p>修改<code>Service</code>代码：</p>
+<figure class="highlight kotlin hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">onStartCommand</span><span class="hljs-params">(intent: <span class="hljs-type">Intent</span>?, flags: <span class="hljs-type">Int</span>, startId: <span class="hljs-type">Int</span>)</span></span>: <span class="hljs-built_in">Int</span> &#123;</span><br><span class="line">    startActivity(Intent(<span class="hljs-keyword">this</span>,MainActivity::<span class="hljs-class"><span class="hljs-keyword">class</span>.<span class="hljs-title">java</span>)</span></span><br><span class="line">        .apply &#123;</span><br><span class="line">            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)</span><br><span class="line">            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)</span><br><span class="line">            addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)</span><br><span class="line">        &#125;)</span><br><span class="line">    <span class="hljs-keyword">return</span> <span class="hljs-keyword">super</span>.onStartCommand(intent, flags, startId)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>再次测试，同样的步骤<code>MainActivity</code>没有重建。<code>onNewIntent</code>方法得到回调。</p>
+<h3 id="场景二：在Activity中启动Activity。"><a href="#场景二：在Activity中启动Activity。" class="headerlink" title="场景二：在Activity中启动Activity。"></a>场景二：在Activity中启动Activity。</h3><p>试想一种场景，你在一个层级比较深的<code>Activity</code>，需要返回到<code>MainActivity</code>，并且不能销毁<code>MainActivity</code>，可以怎么做？其实和场景一一样，只是我们不需要加<code>FLAG_ACTIVITY_NEW_TASK</code>这个<code>Flag</code>。</p>
+<p>修改代码，在<code>SencondActivity</code>中跳转到<code>ThirdActivity</code>，并由<code>ThirdActivity</code>跳转到<code>MainActivity</code>。</p>
+<p><code>ThirdActivity</code>代码如下：</p>
+<figure class="highlight kotlin hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">bt_third_activity.setOnClickListener &#123;</span><br><span class="line">    startActivity(Intent(<span class="hljs-keyword">this</span>,MainActivity::<span class="hljs-class"><span class="hljs-keyword">class</span>.<span class="hljs-title">java</span>)</span></span><br><span class="line">        .apply &#123;</span><br><span class="line">            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)</span><br><span class="line">            addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)</span><br><span class="line">        &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>经测试，效果达到，任务栈中只有<code>MainActivity</code>，并且未重建，<code>onNewIntent</code>回调。</p>
+<h3 id="场景三：从通知中启动Activity。"><a href="#场景三：从通知中启动Activity。" class="headerlink" title="场景三：从通知中启动Activity。"></a>场景三：从通知中启动Activity。</h3><p>我们根据场景2修改代码，在<code>ThirdActivity</code>中弹出个通知，并且希望点击通知回到<code>MainActivity</code>。</p>
+<p>代码如下：</p>
+<figure class="highlight kotlin hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">bt_third_activity.setOnClickListener &#123;</span><br><span class="line">    <span class="hljs-keyword">val</span> intent = Intent(<span class="hljs-keyword">this</span>, MainActivity::<span class="hljs-class"><span class="hljs-keyword">class</span>.<span class="hljs-title">java</span>)</span></span><br><span class="line">        .apply &#123;</span><br><span class="line">            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)</span><br><span class="line">            addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)</span><br><span class="line">        &#125;</span><br><span class="line">    <span class="hljs-keyword">val</span> pendingIntent = PendingIntent.getActivity(<span class="hljs-keyword">this</span>, <span class="hljs-number">0</span>, intent, <span class="hljs-number">0</span>)</span><br><span class="line">    <span class="hljs-keyword">val</span> ntf = NotificationCompat.Builder(<span class="hljs-keyword">this</span>, <span class="hljs-string">"id"</span>)</span><br><span class="line">        .setSmallIcon(R.mipmap.ic_launcher)</span><br><span class="line">        .setContentTitle(<span class="hljs-string">"title"</span>)</span><br><span class="line">        .setContentText(<span class="hljs-string">"text"</span>)</span><br><span class="line">        .setContentIntent(pendingIntent)</span><br><span class="line">        .build()</span><br><span class="line"></span><br><span class="line">    <span class="hljs-keyword">val</span> notificationManager =</span><br><span class="line">        getSystemService(Service.NOTIFICATION_SERVICE) <span class="hljs-keyword">as</span> NotificationManager</span><br><span class="line">    notificationManager.notify(<span class="hljs-number">2</span>, ntf)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>测试发现<code>IntentFlag</code>无效了，在<code>so</code>上找到一个答案<a href="https://stackoverflow.com/questions/24873131/android-clear-task-flag-not-working-for-pendingintent" target="_blank" rel="noopener">https://stackoverflow.com/questions/24873131/android-clear-task-flag-not-working-for-pendingintent</a></p>
+<p>发现不能将<code>PendingIntent</code>的<code>requestCode</code>设置为<code>0</code>。修改成不为<code>0</code>之后效果达到和场景二一样。</p>
+<p>修改代码如下：</p>
+<figure class="highlight kotlin hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-keyword">val</span> pendingIntent = PendingIntent.getActivity(<span class="hljs-keyword">this</span>, <span class="hljs-number">1</span>, intent, <span class="hljs-number">0</span>)</span><br></pre></td></tr></table></figure>
+
+<h3 id="场景四：清除栈内所有Activity"><a href="#场景四：清除栈内所有Activity" class="headerlink" title="场景四：清除栈内所有Activity"></a>场景四：清除栈内所有Activity</h3><p>这种情况比较常见的是<code>token</code>过期，需要清除栈内所有<code>Activity</code>，然后启动登录界面。我们假如<code>ThirdActivity</code>是登录界面。在任务栈栈内存在<code>MainActivity</code>，<code>SecondActivity</code>的情况下，此时<code>token</code>过期了。这时我们需要启动<code>ThirdActivity</code>。</p>
+<p>此时我们需要用到<code>FLAG_ACTIVITY_CLEAR_TASK</code> 这个<code>Flag</code>，并且，文档表示该<code>Flag</code>必须和<code>FLAG_ACTIVITY_NEW_TASK</code>一起使用。我们试一下不一起使用会怎么样：</p>
+<p><code>SecondActivity</code>代码：</p>
+<figure class="highlight kotlin hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">bt_second_activity.setOnClickListener &#123;</span><br><span class="line">    startActivity(Intent(<span class="hljs-keyword">this</span>,ThirdActivity::<span class="hljs-class"><span class="hljs-keyword">class</span>.<span class="hljs-title">java</span>)</span></span><br><span class="line">        .apply &#123;</span><br><span class="line">            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)</span><br><span class="line">        &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>经测试，如果不添加<code>FLAG_ACTIVITY_NEW_TASK</code>，任务栈并没有被清空，</p>
+<p>加上之后效果正常。</p>
+<h3 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h3><p>以上就是上面就是常见的几种使用<code>Flag</code>来启动<code>Activity</code>的场景。熟练之后肯定是比在<code>xml</code>中指定更加灵活的。</p>
+
+        </div>
+        
+        
+        
+    </div>
+</div>
+
+
+
+
+
+<div class="card card-transparent">
+    <div class="level post-navigation is-flex-wrap is-mobile">
+        
+        <div class="level-start">
+            <a class="level level-item has-link-grey  article-nav-prev" href="/2020/08/24/聊一聊String，StringBuilder，StringBuffer/">
+                <i class="level-item fas fa-chevron-left"></i>
+                <span class="level-item">聊一聊String，StringBuilder，StringBuffer</span>
+            </a>
+        </div>
+        
+        
+        <div class="level-end">
+            <a class="level level-item has-link-grey  article-nav-next" href="/2020/07/15/在macOS上使用Charles在Android 7.0设备上抓包/">
+                <span class="level-item">在macOS上使用Charles在Android 7.0设备上抓包</span>
+                <i class="level-item fas fa-chevron-right"></i>
+            </a>
+        </div>
+        
+    </div>
+</div>
+
+
+</div>
+                
+
+
+
+
+<div class="column is-4-tablet is-4-desktop is-3-widescreen  has-order-1 column-left ">
+    
+        
+<div class="card widget">
+    <div class="card-content">
+        <nav class="level">
+            <div class="level-item has-text-centered" style="flex-shrink: 1">
+                <div>
+                    
+                        <img class="image is-128x128 has-mb-6" src="/images/avatar.jpg" alt="cs丶">
+                    
+                    
+                    <p class="is-size-4 is-block">
+                        cs丶
+                    </p>
+                    
+                    
+                    <p class="is-size-6 is-block">
+                        Android Developer
+                    </p>
+                    
+                    
+                    <p class="is-size-6 is-flex is-flex-center has-text-grey">
+                        <i class="fas fa-map-marker-alt has-mr-7"></i>
+                        <span>SiChuan MianYang</span>
+                    </p>
+                    
+                </div>
+            </div>
+        </nav>
+        <nav class="level is-mobile">
+            <div class="level-item has-text-centered is-marginless">
+                <div>
+                    <p class="heading">
+                        文章
+                    </p>
+                    <p class="title has-text-weight-normal">
+                        14
+                    </p>
+                </div>
+            </div>
+            <div class="level-item has-text-centered is-marginless">
+                <div>
+                    <p class="heading">
+                        分类
+                    </p>
+                    <p class="title has-text-weight-normal">
+                        5
+                    </p>
+                </div>
+            </div>
+            <div class="level-item has-text-centered is-marginless">
+                <div>
+                    <p class="heading">
+                        标签
+                    </p>
+                    <p class="title has-text-weight-normal">
+                        0
+                    </p>
+                </div>
+            </div>
+        </nav>
+        <div class="level">
+            <a class="level-item button is-link is-rounded" href="https://github.com/lesincs" target="_blank">
+                关注我</a>
+        </div>
+        
+        
+    </div>
+</div>
+    
+        
+    
+        
+<div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+            <h3 class="menu-label">
+                分类
+            </h3>
+            <ul class="menu-list">
+            <li>
+        <a class="level is-marginless" href="/categories/Android/">
+            <span class="level-start">
+                <span class="level-item">Android</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">3</span>
+            </span>
+        </a></li><li>
+        <a class="level is-marginless" href="/categories/Java/">
+            <span class="level-start">
+                <span class="level-item">Java</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">1</span>
+            </span>
+        </a></li><li>
+        <a class="level is-marginless" href="/categories/生活/">
+            <span class="level-start">
+                <span class="level-item">生活</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">1</span>
+            </span>
+        </a></li><li>
+        <a class="level is-marginless" href="/categories/算法/">
+            <span class="level-start">
+                <span class="level-item">算法</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">4</span>
+            </span>
+        </a></li><li>
+        <a class="level is-marginless" href="/categories/随想/">
+            <span class="level-start">
+                <span class="level-item">随想</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">5</span>
+            </span>
+        </a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+    
+        
+    
+    
+        <div class="column-right-shadow is-hidden-widescreen ">
+        
+            
+<div class="card widget">
+    <div class="card-content">
+        <h3 class="menu-label">
+            最新文章
+        </h3>
+        
+        <article class="media">
+            
+            <a href="/2020/10/18/路口/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/images/thumbnail.svg" alt="路口">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-10-18T15:07:00.000Z">2020-10-18</time></div>
+                    <a href="/2020/10/18/路口/" class="title has-link-black-ter is-size-6 has-text-weight-normal">路口</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/随想/">随想</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2020/10/17/一个Android猿的九月面试&杂谈/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnail/michael-heuser-312895-unsplash.jpg" alt="一个 Android 猿的九月面试&amp;杂谈">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-10-17T04:16:00.000Z">2020-10-17</time></div>
+                    <a href="/2020/10/17/一个Android猿的九月面试&杂谈/" class="title has-link-black-ter is-size-6 has-text-weight-normal">一个 Android 猿的九月面试&amp;杂谈</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/随想/">随想</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2020/10/13/解决Gradle下载自身缓慢的问题/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnail/joseph-barrientos-20264-unsplash.jpg" alt="解决Gradle下载自身缓慢的问题">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-10-13T15:38:00.000Z">2020-10-13</time></div>
+                    <a href="/2020/10/13/解决Gradle下载自身缓慢的问题/" class="title has-link-black-ter is-size-6 has-text-weight-normal">解决Gradle下载自身缓慢的问题</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/Android/">Android</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2020/10/11/如何书写自己的英文地址/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnail/suganth-393816-unsplash.jpg" alt="如何书写自己的英文地址">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-10-11T11:48:00.000Z">2020-10-11</time></div>
+                    <a href="/2020/10/11/如何书写自己的英文地址/" class="title has-link-black-ter is-size-6 has-text-weight-normal">如何书写自己的英文地址</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/随想/">随想</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2020/09/19/旋转数组的最小数字/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnail/jf-brou-358069-unsplash.jpg" alt="旋转数组的最小数字">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-09-19T02:28:50.000Z">2020-09-19</time></div>
+                    <a href="/2020/09/19/旋转数组的最小数字/" class="title has-link-black-ter is-size-6 has-text-weight-normal">旋转数组的最小数字</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/算法/">算法</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+    </div>
+</div>
+
+        
+            <div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+        <h3 class="menu-label">
+            归档
+        </h3>
+        <ul class="menu-list">
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/10/">
+                <span class="level-start">
+                    <span class="level-item">十月 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">4</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/09/">
+                <span class="level-start">
+                    <span class="level-item">九月 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/08/">
+                <span class="level-start">
+                    <span class="level-item">八月 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/07/">
+                <span class="level-start">
+                    <span class="level-item">七月 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">2</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/06/">
+                <span class="level-start">
+                    <span class="level-item">六月 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">3</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/01/">
+                <span class="level-start">
+                    <span class="level-item">一月 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2019/09/">
+                <span class="level-start">
+                    <span class="level-item">九月 2019</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2019/08/">
+                <span class="level-start">
+                    <span class="level-item">八月 2019</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        </ul>
+        </div>
+    </div>
+</div>
+        
+            <div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+            <h3 class="menu-label">
+                标签
+            </h3>
+            <div class="field is-grouped is-grouped-multiline">
+                
+            </div>
+        </div>
+    </div>
+</div>
+        
+        </div>
+    
+</div>
+
+                
+
+
+
+
+<div class="column is-4-tablet is-4-desktop is-3-widescreen is-hidden-touch is-hidden-desktop-only has-order-3 column-right ">
+    
+        
+<div class="card widget">
+    <div class="card-content">
+        <h3 class="menu-label">
+            最新文章
+        </h3>
+        
+        <article class="media">
+            
+            <a href="/2020/10/18/路口/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/images/thumbnail.svg" alt="路口">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-10-18T15:07:00.000Z">2020-10-18</time></div>
+                    <a href="/2020/10/18/路口/" class="title has-link-black-ter is-size-6 has-text-weight-normal">路口</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/随想/">随想</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2020/10/17/一个Android猿的九月面试&杂谈/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnail/michael-heuser-312895-unsplash.jpg" alt="一个 Android 猿的九月面试&amp;杂谈">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-10-17T04:16:00.000Z">2020-10-17</time></div>
+                    <a href="/2020/10/17/一个Android猿的九月面试&杂谈/" class="title has-link-black-ter is-size-6 has-text-weight-normal">一个 Android 猿的九月面试&amp;杂谈</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/随想/">随想</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2020/10/13/解决Gradle下载自身缓慢的问题/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnail/joseph-barrientos-20264-unsplash.jpg" alt="解决Gradle下载自身缓慢的问题">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-10-13T15:38:00.000Z">2020-10-13</time></div>
+                    <a href="/2020/10/13/解决Gradle下载自身缓慢的问题/" class="title has-link-black-ter is-size-6 has-text-weight-normal">解决Gradle下载自身缓慢的问题</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/Android/">Android</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2020/10/11/如何书写自己的英文地址/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnail/suganth-393816-unsplash.jpg" alt="如何书写自己的英文地址">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-10-11T11:48:00.000Z">2020-10-11</time></div>
+                    <a href="/2020/10/11/如何书写自己的英文地址/" class="title has-link-black-ter is-size-6 has-text-weight-normal">如何书写自己的英文地址</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/随想/">随想</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2020/09/19/旋转数组的最小数字/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnail/jf-brou-358069-unsplash.jpg" alt="旋转数组的最小数字">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2020-09-19T02:28:50.000Z">2020-09-19</time></div>
+                    <a href="/2020/09/19/旋转数组的最小数字/" class="title has-link-black-ter is-size-6 has-text-weight-normal">旋转数组的最小数字</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/算法/">算法</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+    </div>
+</div>
+
+    
+        <div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+        <h3 class="menu-label">
+            归档
+        </h3>
+        <ul class="menu-list">
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/10/">
+                <span class="level-start">
+                    <span class="level-item">十月 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">4</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/09/">
+                <span class="level-start">
+                    <span class="level-item">九月 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/08/">
+                <span class="level-start">
+                    <span class="level-item">八月 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/07/">
+                <span class="level-start">
+                    <span class="level-item">七月 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">2</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/06/">
+                <span class="level-start">
+                    <span class="level-item">六月 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">3</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2020/01/">
+                <span class="level-start">
+                    <span class="level-item">一月 2020</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2019/09/">
+                <span class="level-start">
+                    <span class="level-item">九月 2019</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2019/08/">
+                <span class="level-start">
+                    <span class="level-item">八月 2019</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">1</span>
+                </span>
+            </a>
+        </li>
+        
+        </ul>
+        </div>
+    </div>
+</div>
+    
+        <div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+            <h3 class="menu-label">
+                标签
+            </h3>
+            <div class="field is-grouped is-grouped-multiline">
+                
+            </div>
+        </div>
+    </div>
+</div>
+    
+    
+</div>
+
+            </div>
+        </div>
+    </section>
+    <footer class="footer">
+    <div class="container">
+        <div class="level">
+            <div class="level-start has-text-centered-mobile">
+                <a class="footer-logo is-block has-mb-6" href="/">
+                
+                    <img src="/images/avatar.jpg" alt="使用IntentFlag来启动Activity" height="28">
+                
+                </a>
+                <p class="is-size-7">
+                &copy; 2020 cs丶&nbsp;
+                Powered by <a href="https://hexo.io/" target="_blank">Hexo</a> & <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank">Icarus</a>
+                
+                </p>
+            </div>
+            <div class="level-end">
+            
+                <div class="field has-addons is-flex-center-mobile has-mt-5-mobile is-flex-wrap is-flex-middle">
+                
+                
+                <p class="control">
+                    <a class="button is-white is-large" target="_blank" title="Download on GitHub" href="https://github.com/lesincs">
+                        
+                        <i class="fab fa-github"></i>
+                        
+                    </a>
+                </p>
+                
+                </div>
+            
+            </div>
+        </div>
+    </div>
+</footer>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script>
+<script>moment.locale("zh-CN");</script>
+
+
+    
+    
+    
+    <script src="/js/animation.js"></script>
+    
+
+    
+    
+    
+    <script src="https://cdn.jsdelivr.net/npm/lightgallery@1.6.8/dist/js/lightgallery.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.7.0/dist/js/jquery.justifiedGallery.min.js" defer></script>
+    <script src="/js/gallery.js" defer></script>
+    
+
+    
+    
+
+<div id="outdated">
+    <h6>Your browser is out-of-date!</h6>
+    <p>Update your browser to view this website correctly. <a id="btnUpdateBrowser" href="http://outdatedbrowser.com/">Update
+            my browser now </a></p>
+    <p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">&times;</a></p>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.js" defer></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        outdatedBrowser({
+            bgColor: '#f25648',
+            color: '#ffffff',
+            lowerThan: 'flex'
+        });
+    });
+</script>
+
+
+    
+    
+<script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.5/unpacked/MathJax.js?config=TeX-MML-AM_CHTML" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    MathJax.Hub.Config({
+        'HTML-CSS': {
+            matchFontHeight: false
+        },
+        SVG: {
+            matchFontHeight: false
+        },
+        CommonHTML: {
+            matchFontHeight: false
+        },
+        tex2jax: {
+            inlineMath: [
+                ['$','$'],
+                ['\\(','\\)']
+            ]
+        }
+    });
+});
+</script>
+
+    
+    
+
+<a id="back-to-top" title="回到顶端" href="javascript:;">
+    <i class="fas fa-chevron-up"></i>
+</a>
+<script src="/js/back-to-top.js" defer></script>
+
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+    <script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script>
+    <script src="/js/clipboard.js" defer></script>
+    
+
+    
+    
+    
+
+
+<script src="/js/main.js" defer></script>
+
+    
+    <div class="searchbox ins-search">
+    <div class="searchbox-container ins-search-container">
+        <div class="searchbox-input-wrapper">
+            <input type="text" class="searchbox-input ins-search-input" placeholder="想要查找什么...">
+            <span class="searchbox-close ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="searchbox-result-wrapper ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+    (function (window) {
+        var INSIGHT_CONFIG = {
+            TRANSLATION: {
+                POSTS: '文章',
+                PAGES: '页面',
+                CATEGORIES: '分类',
+                TAGS: '标签',
+                UNTITLED: '(无标题)',
+            },
+            CONTENT_URL: '/content.json',
+        };
+        window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+    })(window);
+</script>
+<script src="/js/insight.js" defer></script>
+<link rel="stylesheet" href="/css/search.css">
+<link rel="stylesheet" href="/css/insight.css">
+    
+</body>
+</html>
